@@ -1196,75 +1196,30 @@
   /* ==========================================================
      MOCK DATA — Replace with real API calls to Google Apps Script
   ========================================================== */
-  const MOCK_DATA = {
-    user: { name: "Jorge", month: "Mayo", year: 2025 },
-    financial: {
-      safeToSpend:    1_842_500,
-      monthlyIncome:  6_800_000,
-      monthlyExpense: 4_157_500,
-      activeDebts:    800_000,
-      savingsRate:    27,
-    },
-    alerts: [
-      {
-        id: 1,
-        type: "urgent",
-        icon: "📺",
-        title: "Netflix",
-        description: "Se cobra mañana",
-        amount: -52_900,
-        daysLeft: 1,
-      },
-      {
-        id: 2,
-        type: "warning",
-        icon: "⚡",
-        title: "Servicio de luz",
-        description: "Vence en 4 días",
-        amount: -128_000,
-        daysLeft: 4,
-      },
-      {
-        id: 3,
-        type: "warning",
-        icon: "📱",
-        title: "Plan celular",
-        description: "Débito automático en 6 días",
-        amount: -89_000,
-        daysLeft: 6,
-      },
-      {
-        id: 4,
-        type: "info",
-        icon: "💵",
-        title: "Pago recibido",
-        description: "Transferencia identificada",
-        amount: +500_000,
-        daysLeft: 0,
-      },
-    ],
-    chartData: {
-      total: 68,
-      categories: [
-        { label: "Alimentación",   value: 980_000,  color: "#00e87a", pct: 23 },
-        { label: "Transporte",     value: 420_000,  color: "#4fc3f7", pct: 10 },
-        { label: "Suscripciones",  value: 310_000,  color: "#ce93d8", pct: 7  },
-        { label: "Servicios",      value: 560_000,  color: "#ffc107", pct: 13 },
-        { label: "Entretenimiento",value: 280_000,  color: "#ff8a65", pct: 7  },
-        { label: "Otros",          value: 607_500,  color: "#546e7a", pct: 15 },
-      ],
-    },
-    transactions: [
-      { id: 1,  icon: "🛒", category: "Alimentación",   name: "Éxito Chapinero",       amount: -87_450,  date: "Hoy, 10:23 AM",    status: "completed", type: "debit",  bank: "Bancolombia", reference: "TXN-2025-001" },
-      { id: 2,  icon: "🚌", category: "Transporte",     name: "TransMilenio Recarga",   amount: -50_000,  date: "Hoy, 08:05 AM",    status: "completed", type: "debit",  bank: "Nequi",       reference: "TXN-2025-002" },
-      { id: 3,  icon: "💸", category: "Ingresos",       name: "Nómina Mayo",            amount: +4_500_000,date:"Ayer, 09:00 AM",   status: "completed", type: "credit", bank: "Bancolombia", reference: "TXN-2025-003" },
-      { id: 4,  icon: "☕", category: "Alimentación",   name: "Juan Valdez · Café",     amount: -18_500,  date: "Ayer, 07:30 AM",   status: "completed", type: "debit",  bank: "Bancolombia", reference: "TXN-2025-004" },
-      { id: 5,  icon: "📺", category: "Suscripciones",  name: "Spotify Premium",        amount: -20_900,  date: "Hace 2 días",      status: "completed", type: "debit",  bank: "Bancolombia", reference: "TXN-2025-005" },
-      { id: 6,  icon: "💊", category: "Salud",          name: "Droguería Colsubsidio",  amount: -34_200,  date: "Hace 3 días",      status: "completed", type: "debit",  bank: "Nequi",       reference: "TXN-2025-006" },
-      { id: 7,  icon: "🏠", category: "Servicios",      name: "Arriendo Mayo",          amount: -1_200_000,date:"Hace 5 días",      status: "completed", type: "debit",  bank: "Bancolombia", reference: "TXN-2025-007" },
-      { id: 8,  icon: "💵", category: "Ingresos",       name: "Proyecto Freelance",     amount: +800_000, date: "Hace 7 días",      status: "completed", type: "credit", bank: "Daviplata",   reference: "TXN-2025-008" },
-    ],
-  };
+ const API_URL = "https://script.google.com/macros/s/AKfycbxzc81A0KomlBLeEOUWRlC6wv58Jg9W8VdJ2VBRpd2eJOWbh2_oqOid8l__YsFRcJRL2Q/exec";
+
+async function fetchFinancialData() {
+  try {
+    const res  = await fetch(API_URL);
+    const data = await res.json();
+    localStorage.setItem("finanzas_cache", JSON.stringify(data));
+    return data;
+  } catch (error) {
+    console.warn("Sin conexión — cargando cache local.");
+    const cache = localStorage.getItem("finanzas_cache");
+    if (cache) return JSON.parse(cache);
+    return FALLBACK_DATA;
+  }
+}
+
+const FALLBACK_DATA = {
+  meta: { updatedLabel: "Sin conexión", userName: "Nicolás" },
+  financial: {
+    safeToSpend: 0, monthlyIncome: 0,
+    monthlyExpense: 0, activeDebts: 0, savingsRate: 0
+  },
+  alerts: [], chartData: { total: 0, categories: [] }, transactions: []
+};
 
   /* ==========================================================
      UTILITIES
