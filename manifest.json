@@ -2,6 +2,7 @@
   "name": "FinanzasIA",
   "short_name": "FinanzasIA",
   "description": "Analizador Financiero Personal con IA",
+  "id": "/finanzas-ia-pwa/",
   "start_url": "/finanzas-ia-pwa/",
   "scope": "/finanzas-ia-pwa/",
   "display": "standalone",
