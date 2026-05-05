@@ -3,26 +3,28 @@ const ASSETS = [
   "/finanzas-ia-pwa/",
   "/finanzas-ia-pwa/index.html",
   "/finanzas-ia-pwa/manifest.json",
+  "/finanzas-ia-pwa/icon-192.png",
+  "/finanzas-ia-pwa/icon-512.png"
 ];
 
-self.addEventListener("install", e => {
-  e.waitUntil(
+self.addEventListener("install", event => {
+  event.waitUntil(
     caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
   );
   self.skipWaiting();
 });
 
-self.addEventListener("activate", e => {
-  e.waitUntil(
+self.addEventListener("activate", event => {
+  event.waitUntil(
     caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
+      Promise.all(keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key)))
     )
   );
   self.clients.claim();
 });
 
-self.addEventListener("fetch", e => {
-  e.respondWith(
-    caches.match(e.request).then(cached => cached || fetch(e.request))
+self.addEventListener("fetch", event => {
+  event.respondWith(
+    caches.match(event.request).then(response => response || fetch(event.request))
   );
 });
