@@ -8,8 +8,9 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="FinanzasIA">
   <meta name="description" content="Analizador Financiero y Controlador de Gastos personal con IA">
-  <link rel="manifest" href="#manifest-inline" id="manifest-link">
+ <link rel="manifest" href="manifest.json"> 
   <title>FinanzasIA</title>
+  
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -967,6 +968,7 @@
 </head>
 
 <body>
+  
 <div class="app-shell">
 
   <!-- SKIP LINK -->
@@ -1570,14 +1572,7 @@ const FALLBACK_DATA = {
     }, 2800);
   }
 
-  /* ==========================================================
-     PWA: Service Worker Registration (Simulated)
-  ========================================================== */
-  if ("serviceWorker" in navigator) {
-    // In production: register a real SW file at /sw.js
-    // navigator.serviceWorker.register("/sw.js").then(reg => console.log("SW registered", reg));
-    console.info("[PWA] Service Worker ready. Register /sw.js for offline support.");
-  }
+
 
   /* ==========================================================
      INIT
@@ -1589,6 +1584,13 @@ const FALLBACK_DATA = {
     initChart();
     initTransactions();
   })();
+   if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then(reg => console.log('✅ Service Worker registrado:', reg.scope))
+        .catch(err => console.warn('❌ SW error:', err));
+    });
+  }
 </script>
 
 </body>
