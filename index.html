@@ -627,9 +627,13 @@
       transactions: []
     };
 
-    async function fetchFinancialData() {
+   async function fetchFinancialData() {
       try {
-        const res = await fetch(API_URL, { method: "GET" });
+        const res = await fetch(API_URL, {
+          method: "GET",
+          redirect: "follow",
+          mode: "cors"
+        });
         if (!res.ok) throw new Error("API error");
         const data = await res.json();
         return data;
