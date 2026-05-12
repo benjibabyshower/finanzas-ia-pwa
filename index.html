@@ -627,20 +627,42 @@
       transactions: []
     };
 
-   async function fetchFinancialData() {
-      try {
-        const res = await fetch(API_URL, {
-          method: "GET",
-          redirect: "follow",
-          mode: "cors"
-        });
-        if (!res.ok) throw new Error("API error");
-        const data = await res.json();
-        return data;
-      } catch (error) {
-        console.warn("Sin conexión o error de API. Usando FALLBACK_DATA.", error);
-        return FALLBACK_DATA;
-      }
+   function fetchFinancialData() {
+      return new Promise((resolve) => {
+        const callbackName = "__finanzas_cb_" + Date.now();
+        let timeoutId;
+
+        // Crear callback global temporal
+        window[callbackName] = function (data) {
+          clearTimeout(timeoutId);
+          delete window[callbackName];
+          if (scriptEl.parentNode) scriptEl.parentNode.removeChild(scriptEl);
+          resolve(data);
+        };
+
+        // Crear el <script> tag que pide los datos
+        const scriptEl = document.createElement("script");
+        scriptEl.src = API_URL + "?callback=" + callbackName;
+        scriptEl.onerror = function () {
+          clearTimeout(timeoutId);
+          delete window[callbackName];
+          if (scriptEl.parentNode) scriptEl.parentNode.removeChild(scriptEl);
+          console.warn("Sin conexión o error de API. Usando FALLBACK_DATA.");
+          resolve(FALLBACK_DATA);
+        };
+
+        document.head.appendChild(scriptEl);
+
+        // Timeout de seguridad: si no llega respuesta en 10s, usar fallback
+        timeoutId = setTimeout(function () {
+          if (window[callbackName]) {
+            delete window[callbackName];
+            if (scriptEl.parentNode) scriptEl.parentNode.removeChild(scriptEl);
+            console.warn("Timeout llamando a API. Usando FALLBACK_DATA.");
+            resolve(FALLBACK_DATA);
+          }
+        }, 10000);
+      });
     }
 
     function formatCOP(n, compact = false) {
