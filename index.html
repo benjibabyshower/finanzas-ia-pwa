@@ -627,18 +627,40 @@
       transactions: []
     };
 
-   function fetchFinancialData() {
-      return new Promise((resolve) => {
-        const callbackName = "__finanzas_cb_" + Date.now();
-        let timeoutId;
+   const CACHE_KEY = "finanzasIA_cache";
 
-        // Crear callback global temporal
-        window[callbackName] = function (data) {
-          clearTimeout(timeoutId);
-          delete window[callbackName];
-          if (scriptEl.parentNode) scriptEl.parentNode.removeChild(scriptEl);
-          resolve(data);
-        };
+async function fetchFinancialData() {
+  try {
+    const res = await fetch(API_URL, { method: "GET" });
+    if (!res.ok) throw new Error("API error " + res.status);
+    const data = await res.json();
+    // Guardamos en localStorage con timestamp
+    localStorage.setItem(CACHE_KEY, JSON.stringify({
+      data,
+      savedAt: Date.now()
+    }));
+    console.log("✅ Datos frescos del backend guardados en caché.");
+    return data;
+  } catch (error) {
+    console.warn("Sin conexión o error de API. Buscando caché local...", error);
+    // Intentar leer caché previa
+    try {
+      const cached = localStorage.getItem(CACHE_KEY);
+      if (cached) {
+        const { data, savedAt } = JSON.parse(cached);
+        const horasAtras = Math.round((Date.now() - savedAt) / 3600000);
+        console.log(`📦 Usando caché de hace ${horasAtras}h.`);
+        // Marcamos que es dato cacheado para mostrarlo en la UI
+        if (data.meta) data.meta.updatedLabel = `Datos de hace ${horasAtras}h (sin conexión)`;
+        return data;
+      }
+    } catch (e) {
+      console.warn("Caché corrupta, ignorando.", e);
+    }
+    console.warn("Sin caché disponible. Usando FALLBACK_DATA vacío.");
+    return FALLBACK_DATA;
+  }
+}
 
         // Crear el <script> tag que pide los datos
         const scriptEl = document.createElement("script");
